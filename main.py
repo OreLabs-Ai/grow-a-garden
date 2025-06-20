@@ -1,28 +1,32 @@
 import discord
 import requests
 import asyncio
+import os
 
-# === KONFIGURASI ===
-DISCORD_TOKEN = 'MTMzNDc2ODY5NjYyMjcxNDk4NA.G1uLGp.PAfcPMYiwPL3wsP6_vm7Zxg_yi9WpoOY3el6iM'
-CHANNEL_ID = 1384148467676483686  # ID channel #gagstock
+# === AMBIL DATA DARI ENVIRONMENT VARIABLE ===
+DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+CHANNEL_ID = int(os.getenv('CHANNEL_ID'))
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
+# === KATA-KATA YANG AKAN DIDETEKSI ===
 KEYWORDS = ['carrot', 'tomato', 'blueberry']
 
-TELEGRAM_BOT_TOKEN = '7848618432:AAFJESYJF-0hXIwvLABuDTDcL8zNk2cB5SM'
-TELEGRAM_CHAT_ID = '5802965692'
-
-# === FUNGSI KIRIM TELEGRAM (SPAM 8x per 4 detik) ===
+# === FUNGSI UNTUK SPAM TELEGRAM ===
 async def spam_telegram(pesan, jumlah=8, interval=0.5):
     url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
     data = {'chat_id': TELEGRAM_CHAT_ID, 'text': pesan}
     for _ in range(jumlah):
-        requests.post(url, data=data)
+        try:
+            requests.post(url, data=data)
+        except Exception as e:
+            print(f'❌ Gagal kirim ke Telegram: {e}')
         await asyncio.sleep(interval)
 
-# === CLIENT DISCORD ===
+# === KELAS BOT DISCORD ===
 class MyClient(discord.Client):
     async def on_ready(self):
-        print(f'✅ Bot login sebagai {self.user}')
+        print(f'✅ Bot berhasil login sebagai {self.user}')
 
     async def on_message(self, message):
         if message.channel.id != CHANNEL_ID or message.author.bot:
@@ -30,12 +34,12 @@ class MyClient(discord.Client):
 
         for keyword in KEYWORDS:
             if keyword.lower() in message.content.lower():
-                print(f'🚨 Deteksi: "{keyword}" dalam pesan: {message.content}')
+                print(f'🚨 Deteksi keyword: "{keyword}" di pesan: {message.content}')
                 pesan = f'📢 Deteksi kata: "{keyword}" di Discord!\nIsi pesan:\n{message.content}'
                 await spam_telegram(pesan)
                 break
 
-# === JALANKAN BOT ===
+# === JALANKAN BOTNYA ===
 intents = discord.Intents.default()
 intents.message_content = True
 
