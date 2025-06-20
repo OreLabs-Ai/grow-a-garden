@@ -3,43 +3,55 @@ import requests
 import asyncio
 import os
 
-# === AMBIL DATA DARI ENVIRONMENT VARIABLE ===
+# === Ambil ENV dan Validasi ===
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
-CHANNEL_ID = int(os.getenv('CHANNEL_ID'))
+CHANNEL_ID = os.getenv('CHANNEL_ID')
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
-# === KATA-KATA YANG AKAN DIDETEKSI ===
+# Validasi semua ENV wajib ada
+if not all([DISCORD_TOKEN, CHANNEL_ID, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID]):
+    raise ValueError("❌ Pastikan semua ENV variable sudah diset di Railway!")
+
+try:
+    CHANNEL_ID = int(CHANNEL_ID)
+except ValueError:
+    raise ValueError("❌ CHANNEL_ID harus berupa angka!")
+
+# === Kata yang dideteksi ===
 KEYWORDS = ['carrot', 'tomato', 'blueberry']
 
-# === FUNGSI UNTUK SPAM TELEGRAM ===
+# === Fungsi spam telegram ===
 async def spam_telegram(pesan, jumlah=8, interval=0.5):
     url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
     data = {'chat_id': TELEGRAM_CHAT_ID, 'text': pesan}
-    for _ in range(jumlah):
+    for i in range(jumlah):
         try:
-            requests.post(url, data=data)
+            response = requests.post(url, data=data)
+            print(f'📨 [{i+1}] Status Telegram: {response.status_code}')
         except Exception as e:
-            print(f'❌ Gagal kirim ke Telegram: {e}')
+            print(f'❌ Error kirim telegram: {e}')
         await asyncio.sleep(interval)
 
-# === KELAS BOT DISCORD ===
+# === Discord Bot Client ===
 class MyClient(discord.Client):
     async def on_ready(self):
-        print(f'✅ Bot berhasil login sebagai {self.user}')
+        print(f'✅ Bot login sebagai {self.user}')
 
     async def on_message(self, message):
-        if message.channel.id != CHANNEL_ID or message.author.bot:
+        if message.channel.id != CHANNEL_ID:
+            return
+        if message.author.bot:
             return
 
         for keyword in KEYWORDS:
             if keyword.lower() in message.content.lower():
-                print(f'🚨 Deteksi keyword: "{keyword}" di pesan: {message.content}')
-                pesan = f'📢 Deteksi kata: "{keyword}" di Discord!\nIsi pesan:\n{message.content}'
+                print(f'🚨 Keyword "{keyword}" terdeteksi!')
+                pesan = f'📢 Terdeteksi kata "{keyword}"!\nPesan:\n{message.content}'
                 await spam_telegram(pesan)
                 break
 
-# === JALANKAN BOTNYA ===
+# === Jalankan Bot ===
 intents = discord.Intents.default()
 intents.message_content = True
 
