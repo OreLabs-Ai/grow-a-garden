@@ -1,53 +1,35 @@
-import discord
-import requests
-import asyncio
-import os
+import discord import requests import asyncio import os
 
-# === AMBIL DISCORD TOKEN DARI ENV ===
-DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+=== AMBIL DISCORD TOKEN DARI ENV ===
 
-# === KONFIGURASI (TIDAK DARI ENV) ===
-CHANNEL_ID = 1384148467676483686  # ID channel #gagstock
-TELEGRAM_BOT_TOKEN = '7848618432:AAFJESYJF-0hXIwvLABuDTDcL8zNk2cB5SM'
-TELEGRAM_CHAT_ID = '5802965692'
+DISCORD_TOKEN = os.getenv('DISCORD_TOKEN') if not DISCORD_TOKEN: raise ValueError("\u274c DISCORD_TOKEN belum diset di environment variable!")
 
-# === KATA-KATA YANG AKAN DIDETEKSI ===
-KEYWORDS = ['carrot', 'tomato', 'blueberry']
+=== KONFIGURASI (LANGSUNG DITULIS DALAM SCRIPT) ===
 
-# === CEK APAKAH DISCORD TOKEN ADA ===
-if not DISCORD_TOKEN:
-    raise ValueError("❌ DISCORD_TOKEN belum diset di environment variable!")
+CHANNEL_ID = 1384148467676483686  # Channel tempat deteksi keyword TELEGRAM_BOT_TOKEN = '7848618432:AAFJESYJF-0hXIwvLABuDTDcL8zNk2cB5SM' TELEGRAM_CHAT_ID = '5802965692' KEYWORDS = ['carrot', 'tomato', 'blueberry']
 
-# === FUNGSI UNTUK SPAM TELEGRAM ===
-async def spam_telegram(pesan, jumlah=8, interval=0.5):
-    url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
-    data = {'chat_id': TELEGRAM_CHAT_ID, 'text': pesan}
-    for _ in range(jumlah):
-        try:
-            requests.post(url, data=data)
-        except Exception as e:
-            print(f'❌ Gagal kirim ke Telegram: {e}')
-        await asyncio.sleep(interval)
+=== FUNGSI UNTUK KIRIM PESAN TELEGRAM ===
 
-# === KELAS BOT DISCORD ===
-class MyClient(discord.Client):
-    async def on_ready(self):
-        print(f'✅ Bot berhasil login sebagai {self.user}')
+async def spam_telegram(pesan, jumlah=8, interval=0.5): url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage' data = {'chat_id': TELEGRAM_CHAT_ID, 'text': pesan} for i in range(jumlah): try: response = requests.post(url, data=data) print(f"\u2709\ufe0f Telegram Response ({i+1}):", response.status_code, response.text) except Exception as e: print(f'\u274c Gagal kirim ke Telegram: {e}') await asyncio.sleep(interval)
 
-    async def on_message(self, message):
-        if message.channel.id != CHANNEL_ID or message.author.bot:
-            return
+=== CLIENT DISCORD ===
 
-        for keyword in KEYWORDS:
-            if keyword.lower() in message.content.lower():
-                print(f'🚨 Deteksi keyword: "{keyword}" di pesan: {message.content}')
-                pesan = f'📢 Deteksi kata: "{keyword}" di Discord!\nIsi pesan:\n{message.content}'
-                await spam_telegram(pesan)
-                break
+class MyClient(discord.Client): async def on_ready(self): print(f'\u2705 Bot berhasil login sebagai {self.user}')
 
-# === JALANKAN BOTNYA ===
-intents = discord.Intents.default()
-intents.message_content = True
+async def on_message(self, message):
+    if message.channel.id != CHANNEL_ID or message.author.bot:
+        return
 
-client = MyClient(intents=intents)
-client.run(DISCORD_TOKEN)
+    for keyword in KEYWORDS:
+        if keyword.lower() in message.content.lower():
+            print(f'\ud83d\udea8 Deteksi keyword: "{keyword}" di pesan: {message.content}')
+            pesan = f'\ud83d\udce2 Deteksi kata: "{keyword}" di Discord!\nIsi pesan:\n{message.content}'
+            await spam_telegram(pesan)
+            break
+
+=== INTENTS DAN JALANKAN BOT ===
+
+intents = discord.Intents.default() intents.message_content = True
+
+client = MyClient(intents=intents) client.run(DISCORD_TOKEN)
+
