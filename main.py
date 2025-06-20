@@ -14,7 +14,7 @@ TELEGRAM_BOT_TOKEN = '7848618432:AAFJESYJF-0hXIwvLABuDTDcL8zNk2cB5SM'
 TELEGRAM_CHAT_ID = '5802965692'
 
 # === KATA-KATA KUNCI YANG AKAN DIDETEKSI ===
-KEYWORDS = ['carrot', 'tomato', 'blueberry']
+KEYWORDS = ['Sugar', 'Beanstalk', 'Master','Mushroom']
 
 # === FUNGSI SPAM KE TELEGRAM ===
 async def spam_telegram(pesan, jumlah=8, interval=0.5):
