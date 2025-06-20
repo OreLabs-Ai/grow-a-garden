@@ -14,7 +14,7 @@ TELEGRAM_BOT_TOKEN = '7848618432:AAFJESYJF-0hXIwvLABuDTDcL8zNk2cB5SM'
 TELEGRAM_CHAT_ID = '5802965692'
 
 # === KATA-KATA KUNCI YANG AKAN DIDETEKSI ===
-KEYWORDS = ['Sugar', 'Beanstalk', 'Master','Mushroom']
+KEYWORDS = ['Sugar', 'Beanstalk', 'Master', 'Mushroom']
 
 # === FUNGSI SPAM KE TELEGRAM ===
 async def spam_telegram(pesan, jumlah=8, interval=0.5):
@@ -37,9 +37,8 @@ class MyClient(discord.Client):
         print(f'✅ Bot berhasil login sebagai {self.user}')
 
     async def on_message(self, message):
-        if message.channel.id != CHANNEL_ID:
-            return
-        if message.author.bot:
+        # Biar bot gak deteksi pesannya sendiri, tapi bisa baca pesan bot lain
+        if message.channel.id != CHANNEL_ID or message.author.id == self.user.id:
             return
 
         for keyword in KEYWORDS:
