@@ -3,7 +3,7 @@ import requests
 import asyncio
 
 # === KONFIGURASI ===
-DISCORD_TOKEN = '0bda2eb3050fcb3c1d21018e83d5ed894733218711b972bd139cafcd7dd1013d'
+DISCORD_TOKEN = 'MTMzNDc2ODY5NjYyMjcxNDk4NA.GqR3oR.oD1qejxrBzZXQYVhrTTMdEhpkyjryTIsOZqXs0'
 CHANNEL_ID = 1384148467676483686  # ID channel #gagstock
 
 KEYWORDS = ['carrot', 'tomato', 'blueberry']
